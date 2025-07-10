@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Tomat.Terraria.TML.SourceGenerator.Generators;
+namespace Tomat.TML.SourceGenerator.Generators;
 
 /// <summary>
 ///     Generates a default implementation of <c>Terraria.ModLoader.Mod</c>

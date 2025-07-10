@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Tomat.Terraria.TML.SourceGenerator.Generators;
+namespace Tomat.TML.SourceGenerator.Generators;
 
 internal static class GeneratorUtil
 {

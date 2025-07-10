@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Tomat.Terraria.TML.SourceGenerator.Generators;
+namespace Tomat.TML.SourceGenerator.Generators;
 
 /// <summary>
 ///     Creates a type in a namespace matching the assembly name to work around

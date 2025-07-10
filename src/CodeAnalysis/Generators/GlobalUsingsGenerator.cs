@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Tomat.Terraria.TML.SourceGenerator.Generators;
+namespace Tomat.TML.SourceGenerator.Generators;
 
 [Generator]
 public sealed class GlobalUsingsGenerator : IIncrementalGenerator
