@@ -19,7 +19,7 @@ public readonly record struct ProjectContext(string ProjectDirectory, string Pro
         {
             var pathGroup = args[i];
             var groupParts = pathGroup.Split('=');
-            if (groupParts.Length != 2)
+            if (groupParts.Length != 2 || string.IsNullOrEmpty(groupParts[1]))
             {
                 continue;
             }
