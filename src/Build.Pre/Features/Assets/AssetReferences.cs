@@ -123,6 +123,7 @@ internal sealed class EffectReference : IAssetReference
             "float4" => "Microsoft.Xna.Framework.Vector4",
             "matrix" => "Microsoft.Xna.Framework.Matrix",
             "sampler" => "Microsoft.Xna.Framework.Graphics.Texture2D?",
+            "texture" => "Microsoft.Xna.Framework.Graphics.Texture2D?",
             _ => throw new InvalidOperationException("Unsupported uniform type: " + uniformType),
         };
     }
