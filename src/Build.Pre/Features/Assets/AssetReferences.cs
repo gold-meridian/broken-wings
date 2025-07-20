@@ -99,7 +99,7 @@ internal sealed class EffectReference : IAssetReference
         sb.AppendLine();
         sb.AppendLine($"{indent}public static ReLogic.Content.Asset<{type}> Asset => lazy.Value;");
         sb.AppendLine();
-        sb.AppendLine($"{indent}private static readonly System.Lazy<ReLogic.Content.Asset<{type}>> lazy = new(() => Terraria.ModLoader.ModContent.Request<{type}>(KEY));");
+        sb.AppendLine($"{indent}private static readonly System.Lazy<ReLogic.Content.Asset<{type}>> lazy = new(() => Terraria.ModLoader.ModContent.Request<{type}>(KEY, ReLogic.Content.AssetRequestMode.ImmediateLoad));");
         sb.AppendLine();
 
         foreach (var passes in effect.Techniques.SelectMany(x => x.Passes))
