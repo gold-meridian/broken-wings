@@ -121,6 +121,7 @@ internal sealed class EffectReference : IAssetReference
             "float2" => "Microsoft.Xna.Framework.Vector2",
             "float3" => "Microsoft.Xna.Framework.Vector3",
             "float4" => "Microsoft.Xna.Framework.Vector4",
+            "float4x4" => "Microsoft.Xna.Framework.Matrix",
             "matrix" => "Microsoft.Xna.Framework.Matrix",
             "sampler" => "Microsoft.Xna.Framework.Graphics.Texture2D?",
             "sampler2D" => "Microsoft.Xna.Framework.Graphics.Texture2D?",
