@@ -18,7 +18,7 @@
     <ItemGroup>
         <!-- Helpful to automaticlly important any libraryes placed in `lib/`
              (still necessary to explicitly add them to `dllReferences`!). -->
-        <Reference Include="lib\**\*.dll"/>
+        <Reference Include="$(MSBuildProjectFileDirectory)lib\**\*.dll"/>
     </ItemGroup>
 
     <ItemGroup>
