@@ -18,7 +18,7 @@
     <ItemGroup>
         <!-- Helpful to automaticlly important any libraryes placed in `lib/`
              (still necessary to explicitly add them to `dllReferences`!). -->
-        <Reference Include="lib\**"/>
+        <Reference Include="lib\**\*.dll"/>
     </ItemGroup>
 
     <ItemGroup>
