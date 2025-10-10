@@ -16,7 +16,7 @@ internal static class GeneratorUtil
         {
             return rootNamespace;
         }
-        
+
         ctx.ReportDiagnostic(
             Diagnostic.Create(
                 new DiagnosticDescriptor(
@@ -31,6 +31,5 @@ internal static class GeneratorUtil
             )
         );
         return null;
-
     }
 }

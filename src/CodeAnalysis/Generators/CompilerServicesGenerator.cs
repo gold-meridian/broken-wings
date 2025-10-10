@@ -1,5 +1,4 @@
 using System.Text;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -35,7 +34,7 @@ public sealed class IncludedFromAttributeGenerator : IIncrementalGenerator
                    internal sealed class IncludedFromAttribute(string includeName, string includeVersion) : Attribute
                    {
                        public string IncludeName { get; } = includeName;
-               
+
                        public string IncludeVersion { get; } = includeVersion;
                    }
                }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,6 +30,7 @@ public readonly record struct ProjectContext(string ProjectDirectory, string Pro
                 x => new ProjectFile(x.Replace('\\', '/'), Path.Combine(projectDirectory, x))
             ).ToArray();
         }
+
         return new ProjectContext(projectDirectory, args[0], args[1], paths);
     }
 

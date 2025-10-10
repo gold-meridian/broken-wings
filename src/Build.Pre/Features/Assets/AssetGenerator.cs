@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Build.Shared;
 
 namespace Build.Pre.Features.Assets;
@@ -194,11 +193,11 @@ internal sealed partial class AssetGenerator : BuildTask
                   where TParameters : IShaderParameters, new()
               {
                   public TParameters Parameters { get; } = new();
-              
+
                   public override void Apply()
                   {
                       Parameters.Apply(Shader.Parameters);
-              
+
                       base.Apply();
                   }
               }

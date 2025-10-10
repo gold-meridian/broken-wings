@@ -4,12 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Build.Pre.Util;
 using Build.Shared;
-
 using Hjson;
-
 using Newtonsoft.Json.Linq;
 
 namespace Build.Pre.Features.Localization;

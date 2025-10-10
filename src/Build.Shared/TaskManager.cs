@@ -21,13 +21,13 @@ public static class TaskManager
             }
         }
     }
-    
+
     public static void RunTasks(IEnumerable<BuildTask> tasks, ProjectContext ctx)
     {
         foreach (var task in tasks)
         {
             var name = task.GetType().Name;
-            
+
             try
             {
                 Console.WriteLine($"Running task: {name}");

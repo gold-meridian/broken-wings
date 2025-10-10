@@ -2,9 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-
 using Build.Shared;
-
 using ShaderDecompiler;
 
 namespace Build.Pre.Features.Assets;
@@ -91,6 +89,7 @@ internal sealed class EffectReference : IAssetReference
 
             sb.AppendLine($"{indent}        parameters[\"{param.Value.Name}\"]?.SetValue({param.Value.Name});");
         }
+
         sb.AppendLine($"{indent}    }}");
 
         sb.AppendLine($"{indent}}}");

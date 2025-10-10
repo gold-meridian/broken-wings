@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-
 using Build.Shared;
 
 namespace Build.Pre.Features.Shaders;
@@ -25,7 +24,7 @@ internal sealed class ShaderCompiler : BuildTask
         if (OperatingSystem.IsLinux())
         {
             var otherProcess = new Process();
-            var processStartInfo = new ProcessStartInfo()
+            var processStartInfo = new ProcessStartInfo
             {
                 WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = "/bin/bash",
@@ -46,6 +45,7 @@ internal sealed class ShaderCompiler : BuildTask
                 Environment.ExitCode = 1;
                 return;
             }
+
             if (!string.IsNullOrEmpty(output))
             {
                 fxcExePath = fxcExe;
