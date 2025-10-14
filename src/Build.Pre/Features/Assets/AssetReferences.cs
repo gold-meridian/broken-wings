@@ -47,7 +47,27 @@ internal sealed class SoundReference : IAssetReference
 
     public string GenerateCode(ProjectContext ctx, AssetFile asset, string indent)
     {
-        return $"{indent}// TODO: {asset.Name}";
+
+
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"{indent}public const string KEY = \"{ctx.ModName}/{Path.ChangeExtension(asset.Path.Replace('\\', '/'), null)}\";");
+        sb.AppendLine();
+
+
+        if (asset.Path.Contains("Music"))
+        {
+            sb.AppendLine($"{indent}public sealed class Music : ILoadable {{");
+            sb.AppendLine($"{indent}    public void Load(Mod mod) {{ MusicLoader.AddMusic(mod, {System.IO.Path.ChangeExtension(asset.Path, null)}); }}");
+            sb.AppendLine($"{indent}    public void Unload() {{ }}");
+        } else
+        {
+            sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{System.IO.Path.ChangeExtension(asset.Path, null)}\");");
+        }
+
+
+        sb.AppendLine();
+        return sb.ToString().TrimEnd();
     }
 }
 
