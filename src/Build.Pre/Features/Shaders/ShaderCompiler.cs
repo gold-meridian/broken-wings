@@ -8,6 +8,7 @@ namespace Build.Pre.Features.Shaders;
 internal sealed class ShaderCompiler : BuildTask
 {
     private static string BaseDirectory => Path.GetDirectoryName(Path.GetFullPath(Environment.ProcessPath!))!;
+    private static bool linux;
 
     public override void Run(ProjectContext ctx)
     {
@@ -23,6 +24,7 @@ internal sealed class ShaderCompiler : BuildTask
         var fxcExePath = "";
         if (OperatingSystem.IsLinux())
         {
+            linux = true;
             var otherProcess = new Process();
             var processStartInfo = new ProcessStartInfo
             {
@@ -65,6 +67,36 @@ internal sealed class ShaderCompiler : BuildTask
         }
     }
 
+    static string CheckLinuxPathConversion(string str)
+    {
+        if (!linux) return str;
+
+        var process = new Process();
+        var processStartInfo = new ProcessStartInfo
+        {
+            WindowStyle = ProcessWindowStyle.Hidden,
+            FileName = "/bin/bash",
+            Arguments = $"-c \"winepath --windows '{str}'\"", // user already has confirmed wine on path or through package manager
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        process.StartInfo = processStartInfo;
+        process.Start();
+
+        var error = process.StandardError.ReadToEnd();
+        var output = process.StandardOutput.ReadToEnd();
+
+        if (!string.IsNullOrEmpty(output))
+        {
+            return output.Trim();
+        }
+
+        Console.Error.WriteLine("error SHADERC: " + error);
+        Environment.ExitCode = 1;
+        return str;
+    }
+    
     private static void CompileShader(string fxcExePath, string fxcExe, string filePath)
     {
         var fxcOutput = Path.ChangeExtension(filePath, ".fxc");
@@ -78,7 +110,7 @@ internal sealed class ShaderCompiler : BuildTask
         var pInfo = new ProcessStartInfo
         {
             FileName = fxcExe,
-            Arguments = $"{fxcExePath} /T fx_2_0 \"{filePath}\" /Fo \"{fxcOutput}\" /D FX=1 /O3 /Op",
+            Arguments = $"{fxcExePath} /T fx_2_0 \"{CheckLinuxPathConversion(filePath)}\" /Fo \"{CheckLinuxPathConversion(fxcOutput)}\" /D FX=1 /O3 /Op",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -100,7 +132,7 @@ internal sealed class ShaderCompiler : BuildTask
             return;
         }
 
-        // Console.Error.WriteLine($"{filePath}: error SHADERC: fxc.exe exited with code {process.ExitCode}");
+        Console.Error.WriteLine($"{filePath}: error SHADERC: fxc.exe exited with code {process.ExitCode}");
         Environment.ExitCode = process.ExitCode;
     }
 
