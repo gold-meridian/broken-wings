@@ -65,6 +65,11 @@ internal sealed class ShaderCompiler : BuildTask
         {
             CompileShader(fxcExePath, fxcExe, fullPath);
         }
+        
+        if (linux && Environment.ExitCode == -1)
+        {
+            Environment.ExitCode = 0; // wine returns -1 on success for some reason and halts launch until next time
+        }
     }
 
     static string CheckLinuxPathConversion(string str)
@@ -194,6 +199,11 @@ internal sealed class ShaderCompiler : BuildTask
     {
         // Ignore warning X4717 "Effects deprecated for D3DCompiler_47"
         if (message.Contains("X4717") && message.Contains("Effects deprecated for D3DCompiler_47"))
+        {
+            return true;
+        }
+
+        if (message.Contains("fixme"))
         {
             return true;
         }
