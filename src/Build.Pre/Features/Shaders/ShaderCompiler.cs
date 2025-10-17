@@ -63,6 +63,44 @@ internal sealed class ShaderCompiler : BuildTask
         {
             CompileShader(fxcExePath, fxcExe, fullPath);
         }
+
+        if (OperatingSystem.IsLinux() && Environment.ExitCode == -1)
+        {
+            Environment.ExitCode = 0; // wine returns -1 on success for some reason and halts launch until next time
+        }
+    }
+
+    private static string CheckLinuxPathConversion(string str)
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return str;
+        }
+
+        var process = new Process();
+        var processStartInfo = new ProcessStartInfo
+        {
+            WindowStyle = ProcessWindowStyle.Hidden,
+            FileName = "/bin/bash",
+            Arguments = $"-c \"winepath --windows '{str}'\"", // user already has confirmed wine on path or through package manager
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        process.StartInfo = processStartInfo;
+        process.Start();
+
+        var error = process.StandardError.ReadToEnd();
+        var output = process.StandardOutput.ReadToEnd();
+
+        if (!string.IsNullOrEmpty(output))
+        {
+            return output.Trim();
+        }
+
+        Console.Error.WriteLine("error SHADERC: " + error);
+        Environment.ExitCode = 1;
+        return str;
     }
 
     private static void CompileShader(string fxcExePath, string fxcExe, string filePath)
@@ -78,7 +116,7 @@ internal sealed class ShaderCompiler : BuildTask
         var pInfo = new ProcessStartInfo
         {
             FileName = fxcExe,
-            Arguments = $"{fxcExePath} /T fx_2_0 \"{filePath}\" /Fo \"{fxcOutput}\" /D FX=1 /O3 /Op",
+            Arguments = $"{fxcExePath} /T fx_2_0 \"{CheckLinuxPathConversion(filePath)}\" /Fo \"{CheckLinuxPathConversion(fxcOutput)}\" /D FX=1 /O3 /Op",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -100,7 +138,7 @@ internal sealed class ShaderCompiler : BuildTask
             return;
         }
 
-        // Console.Error.WriteLine($"{filePath}: error SHADERC: fxc.exe exited with code {process.ExitCode}");
+        Console.Error.WriteLine($"{filePath}: error SHADERC: fxc.exe exited with code {process.ExitCode}");
         Environment.ExitCode = process.ExitCode;
     }
 
@@ -162,6 +200,11 @@ internal sealed class ShaderCompiler : BuildTask
     {
         // Ignore warning X4717 "Effects deprecated for D3DCompiler_47"
         if (message.Contains("X4717") && message.Contains("Effects deprecated for D3DCompiler_47"))
+        {
+            return true;
+        }
+
+        if (message.Contains("fixme"))
         {
             return true;
         }
