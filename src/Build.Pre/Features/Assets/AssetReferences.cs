@@ -164,7 +164,15 @@ internal sealed class EffectReference : IAssetReference
 
     private static string GetUniformType(string uniformType)
     {
-        return uniformType switch
+        var isArray = false;
+        if (uniformType.Contains('['))
+        {
+            var baseType = uniformType[..uniformType.IndexOf('[')];
+            uniformType = baseType;
+            isArray = true;
+        }
+
+        var finalType = uniformType switch
         {
             "float" => "float",
             "float2" => "Microsoft.Xna.Framework.Vector2",
@@ -179,5 +187,12 @@ internal sealed class EffectReference : IAssetReference
             "bool" => "bool",
             _ => throw new InvalidOperationException("Unsupported uniform type: " + uniformType),
         };
+
+        if (isArray)
+        {
+            finalType += "[]?";
+        }
+
+        return finalType;
     }
 }
