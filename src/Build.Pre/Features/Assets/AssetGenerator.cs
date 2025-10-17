@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Build.Shared;
@@ -13,6 +15,8 @@ namespace Build.Pre.Features.Assets;
 internal sealed partial class AssetGenerator : BuildTask
 {
     private static readonly Regex end_number_regex = EndNumberFinder();
+
+    private static readonly char[] number_chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
     private static readonly IAssetReference[] asset_references =
     [
@@ -114,9 +118,40 @@ internal sealed partial class AssetGenerator : BuildTask
                 sb.AppendLine($"{indent}{{");
             }
 
+            var seenVariantBases = new HashSet<string>();
+
             for (var i = 0; i < root.Files.Count; i++)
             {
                 var file = root.Files[i];
+
+                if (file.Reference.PermitsVariant(file.Path))
+                {
+                    var numberMatch = end_number_regex.Match(file.Name);
+                    if (numberMatch.Success)
+                    {
+                        var trimmedName = numberMatch.Groups[1].Value;
+
+                        if (seenVariantBases.Add(trimmedName))
+                        {
+                            var pathExt = Path.GetExtension(file.Path);
+                            
+                            var variantFile = file with
+                            {
+                                Name = trimmedName,
+                                Path = Path.ChangeExtension(file.Path, null).TrimEnd(number_chars) + pathExt,
+                                Variants = GetVariantData(root.Files.Select(x => x.Name), trimmedName),
+                            };
+
+                            sb.AppendLine($"{indent}    public static class {NormalizeName(variantFile.Name)}");
+                            sb.AppendLine($"{indent}    {{");
+
+                            sb.AppendLine(variantFile.Reference.GenerateCode(ctx, variantFile, $"{indent}        "));
+
+                            sb.AppendLine($"{indent}    }}");
+                            sb.AppendLine();
+                        }
+                    }
+                }
 
                 sb.AppendLine($"{indent}    public static class {NormalizeName(file.Name)}");
                 sb.AppendLine($"{indent}    {{");
@@ -157,9 +192,37 @@ internal sealed partial class AssetGenerator : BuildTask
 
         static string NormalizeName(string name)
         {
-            // Replace any non-alphanumeric characters with underscores
-            return NonAlphanumeric().Replace(name, "_");
+            // - Replace any non-alphanumeric characters with underscores,
+            // - trim trailing underscores as a result of variant number slices
+            //   or simply poor naming.
+            return NonAlphanumeric()
+                  .Replace(name, "_")
+                  .TrimEnd('_');
         }
+    }
+
+    private static VariantData GetVariantData(IEnumerable<string> fileNames, string assetName)
+    {
+        var variantMin = int.MaxValue;
+        var variantMax = 0;
+
+        foreach (var name in fileNames)
+        {
+            if (!name.Contains(assetName))
+            {
+                continue;
+            }
+
+            var numberResult = end_number_regex.Match(Path.GetFileNameWithoutExtension(name));
+            if (numberResult.Success)
+            {
+                var num = int.Parse(numberResult.Groups[2].Value);
+                variantMin = Math.Min(variantMin, num);
+                variantMax = Math.Max(variantMax, num);
+            }
+        }
+
+        return new VariantData(Start: variantMin, End: variantMax);
     }
 
     private static void GenerateCommonFiles(ProjectContext ctx)
@@ -205,7 +268,7 @@ internal sealed partial class AssetGenerator : BuildTask
         );
     }
 
-    [GeneratedRegex(@"([A-Za-z]+)([\d-]+)$")]
+    [GeneratedRegex(@"([^\d]+)([\d]+)$")]
     private static partial Regex EndNumberFinder();
 
     [GeneratedRegex(@"[^\w]")]

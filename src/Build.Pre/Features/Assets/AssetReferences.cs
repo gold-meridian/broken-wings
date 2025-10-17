@@ -9,6 +9,8 @@ namespace Build.Pre.Features.Assets;
 
 internal interface IAssetReference
 {
+    bool PermitsVariant(string path);
+
     bool Eligible(ProjectFile file);
 
     string GenerateCode(ProjectContext ctx, AssetFile asset, string indent);
@@ -16,6 +18,11 @@ internal interface IAssetReference
 
 internal sealed class TextureReference : IAssetReference
 {
+    public bool PermitsVariant(string path)
+    {
+        return false;
+    }
+
     public bool Eligible(ProjectFile file)
     {
         return file.RelativePath.EndsWith(".png") ||
@@ -38,6 +45,11 @@ internal sealed class TextureReference : IAssetReference
 
 internal sealed class SoundReference : IAssetReference
 {
+    public bool PermitsVariant(string path)
+    {
+        return !path.Contains("Music");
+    }
+
     public bool Eligible(ProjectFile file)
     {
         return file.RelativePath.EndsWith(".wav") ||
@@ -47,12 +59,50 @@ internal sealed class SoundReference : IAssetReference
 
     public string GenerateCode(ProjectContext ctx, AssetFile asset, string indent)
     {
-        return $"{indent}// TODO: {asset.Name}";
+        var sb = new StringBuilder();
+        sb.AppendLine($"{indent}public const string KEY = \"{ctx.ModName}/{Path.ChangeExtension(asset.Path.Replace('\\', '/'), null)}\";");
+        sb.AppendLine();
+
+        if (asset.Path.Contains("Music"))
+        {
+            var addMusicPath = Path.ChangeExtension(asset.Path, null);
+            sb.AppendLine($"{indent}private sealed class Loader : Terraria.ModLoader.ILoadable");
+            sb.AppendLine($"{indent}{{");
+            sb.AppendLine($"{indent}    public void Load(Terraria.ModLoader.Mod mod)");
+            sb.AppendLine($"{indent}    {{");
+            sb.AppendLine($"{indent}        if (!Terraria.ModLoader.MusicLoader.MusicExists(mod, \"{addMusicPath}\"))");
+            sb.AppendLine($"{indent}        {{");
+            sb.AppendLine($"{indent}            Terraria.ModLoader.MusicLoader.AddMusic(mod, \"{Path.ChangeExtension(asset.Path, null)}\");");
+            sb.AppendLine($"{indent}        }}");
+            sb.AppendLine($"{indent}    }}");
+            sb.AppendLine();
+            sb.AppendLine($"{indent}    public void Unload() {{ }}");
+            sb.AppendLine($"{indent}}}");
+            sb.AppendLine("");
+            sb.AppendLine($"{indent}public static Terraria.Audio.IAudioTrack Asset => lazy.Value;");
+            sb.AppendLine();
+            sb.AppendLine($"{indent}public static int Slot => Terraria.ModLoader.MusicLoader.GetMusicSlot(KEY);");
+            sb.AppendLine();
+            sb.AppendLine($"{indent}private static readonly System.Lazy<Terraria.Audio.IAudioTrack> lazy = new(() => Terraria.ModLoader.MusicLoader.GetMusic(KEY));");
+        }
+        else
+        {
+            var variantSyntax = asset.Variants.HasValue ? $", {asset.Variants.Value.Start}, {asset.Variants.Value.Count}" : "";
+            sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{Path.ChangeExtension(asset.Path, null)}\"{variantSyntax});");
+        }
+
+        sb.AppendLine();
+        return sb.ToString().TrimEnd();
     }
 }
 
 internal sealed class EffectReference : IAssetReference
 {
+    public bool PermitsVariant(string path)
+    {
+        return false;
+    }
+
     public bool Eligible(ProjectFile file)
     {
         return file.RelativePath.EndsWith(".fxc")
