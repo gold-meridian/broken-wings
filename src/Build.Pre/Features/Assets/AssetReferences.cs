@@ -9,6 +9,8 @@ namespace Build.Pre.Features.Assets;
 
 internal interface IAssetReference
 {
+    bool IsVariant { get; }
+
     bool Eligible(ProjectFile file);
 
     string GenerateCode(ProjectContext ctx, AssetFile asset, string indent);
@@ -16,6 +18,8 @@ internal interface IAssetReference
 
 internal sealed class TextureReference : IAssetReference
 {
+    public bool IsVariant => false;
+
     public bool Eligible(ProjectFile file)
     {
         return file.RelativePath.EndsWith(".png") ||
@@ -38,6 +42,8 @@ internal sealed class TextureReference : IAssetReference
 
 internal sealed class SoundReference : IAssetReference
 {
+    public bool IsVariant => true;
+
     public bool Eligible(ProjectFile file)
     {
         return file.RelativePath.EndsWith(".wav") ||
@@ -75,7 +81,8 @@ internal sealed class SoundReference : IAssetReference
         }
         else
         {
-            sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{Path.ChangeExtension(asset.Path, null)}\");");
+            var variantSyntax = asset.Variants > -1 ? $", {asset.Variants}" : "";
+            sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{Path.ChangeExtension(asset.Path, null)}\"{variantSyntax});");
         }
 
 
@@ -86,6 +93,8 @@ internal sealed class SoundReference : IAssetReference
 
 internal sealed class EffectReference : IAssetReference
 {
+    public bool IsVariant => false;
+
     public bool Eligible(ProjectFile file)
     {
         return file.RelativePath.EndsWith(".fxc")
