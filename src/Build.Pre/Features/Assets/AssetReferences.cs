@@ -47,22 +47,35 @@ internal sealed class SoundReference : IAssetReference
 
     public string GenerateCode(ProjectContext ctx, AssetFile asset, string indent)
     {
-
-
-
         var sb = new StringBuilder();
         sb.AppendLine($"{indent}public const string KEY = \"{ctx.ModName}/{Path.ChangeExtension(asset.Path.Replace('\\', '/'), null)}\";");
         sb.AppendLine();
 
-
         if (asset.Path.Contains("Music"))
         {
-            sb.AppendLine($"{indent}public sealed class Music : ILoadable {{");
-            sb.AppendLine($"{indent}    public void Load(Mod mod) {{ MusicLoader.AddMusic(mod, {System.IO.Path.ChangeExtension(asset.Path, null)}); }}");
+            var addMusicPath = Path.ChangeExtension(asset.Path, null);
+            sb.AppendLine($"{indent}private sealed class Loader : Terraria.ModLoader.ILoadable");
+            sb.AppendLine($"{indent}{{");
+            sb.AppendLine($"{indent}    public void Load(Terraria.ModLoader.Mod mod)");
+            sb.AppendLine($"{indent}    {{");
+            sb.AppendLine($"{indent}        if (!Terraria.ModLoader.MusicLoader.MusicExists(mod, \"{addMusicPath}\"))");
+            sb.AppendLine($"{indent}        {{");
+            sb.AppendLine($"{indent}            Terraria.ModLoader.MusicLoader.AddMusic(mod, \"{Path.ChangeExtension(asset.Path, null)}\");");
+            sb.AppendLine($"{indent}        }}");
+            sb.AppendLine($"{indent}    }}");
+            sb.AppendLine();
             sb.AppendLine($"{indent}    public void Unload() {{ }}");
-        } else
+            sb.AppendLine($"{indent}}}");
+            sb.AppendLine("");
+            sb.AppendLine($"{indent}public static Terraria.Audio.IAudioTrack Asset => lazy.Value;");
+            sb.AppendLine();
+            sb.AppendLine($"{indent}public static int Slot => Terraria.ModLoader.MusicLoader.GetMusicSlot(KEY);");
+            sb.AppendLine();
+            sb.AppendLine($"{indent}private static readonly System.Lazy<Terraria.Audio.IAudioTrack> lazy = new(() => Terraria.ModLoader.MusicLoader.GetMusic(KEY));");
+        }
+        else
         {
-            sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{System.IO.Path.ChangeExtension(asset.Path, null)}\");");
+            sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{Path.ChangeExtension(asset.Path, null)}\");");
         }
 
 
