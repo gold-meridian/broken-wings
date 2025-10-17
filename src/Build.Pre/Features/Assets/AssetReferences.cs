@@ -9,7 +9,7 @@ namespace Build.Pre.Features.Assets;
 
 internal interface IAssetReference
 {
-    bool IsVariant { get; }
+    bool PermitsVariant(string path);
 
     bool Eligible(ProjectFile file);
 
@@ -18,7 +18,10 @@ internal interface IAssetReference
 
 internal sealed class TextureReference : IAssetReference
 {
-    public bool IsVariant => false;
+    public bool PermitsVariant(string path)
+    {
+        return false;
+    }
 
     public bool Eligible(ProjectFile file)
     {
@@ -42,7 +45,10 @@ internal sealed class TextureReference : IAssetReference
 
 internal sealed class SoundReference : IAssetReference
 {
-    public bool IsVariant => true;
+    public bool PermitsVariant(string path)
+    {
+        return !path.Contains("Music");
+    }
 
     public bool Eligible(ProjectFile file)
     {
@@ -81,7 +87,7 @@ internal sealed class SoundReference : IAssetReference
         }
         else
         {
-            var variantSyntax = asset.Variants > -1 ? $", {asset.Variants}" : "";
+            var variantSyntax = asset.Variants.HasValue ? $", {asset.Variants.Value.Start}, {asset.Variants.Value.Count}" : "";
             sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{Path.ChangeExtension(asset.Path, null)}\"{variantSyntax});");
         }
 
@@ -93,7 +99,10 @@ internal sealed class SoundReference : IAssetReference
 
 internal sealed class EffectReference : IAssetReference
 {
-    public bool IsVariant => false;
+    public bool PermitsVariant(string path)
+    {
+        return false;
+    }
 
     public bool Eligible(ProjectFile file)
     {

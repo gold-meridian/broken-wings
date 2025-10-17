@@ -124,7 +124,7 @@ internal sealed partial class AssetGenerator : BuildTask
             {
                 var file = root.Files[i];
 
-                if (file.Reference.IsVariant)
+                if (file.Reference.PermitsVariant(file.Path))
                 {
                     var numberMatch = end_number_regex.Match(file.Name);
                     if (numberMatch.Success)
@@ -139,7 +139,7 @@ internal sealed partial class AssetGenerator : BuildTask
                             {
                                 Name = trimmedName,
                                 Path = Path.ChangeExtension(file.Path, null).TrimEnd(number_chars) + pathExt,
-                                Variants = GetVariantCount(root.Files.Select(x => x.Name), trimmedName),
+                                Variants = GetVariantData(root.Files.Select(x => x.Name), trimmedName),
                             };
 
                             sb.AppendLine($"{indent}    public static class {NormalizeName(variantFile.Name)}");
@@ -201,9 +201,10 @@ internal sealed partial class AssetGenerator : BuildTask
         }
     }
 
-    private static int GetVariantCount(IEnumerable<string> fileNames, string assetName)
+    private static VariantData GetVariantData(IEnumerable<string> fileNames, string assetName)
     {
-        var variants = 1;
+        var variantMin = int.MaxValue;
+        var variantMax = 0;
 
         foreach (var name in fileNames)
         {
@@ -215,11 +216,13 @@ internal sealed partial class AssetGenerator : BuildTask
             var numberResult = end_number_regex.Match(Path.GetFileNameWithoutExtension(name));
             if (numberResult.Success)
             {
-                variants = Math.Max(variants, int.Parse(numberResult.Groups[2].Value));
+                var num = int.Parse(numberResult.Groups[2].Value);
+                variantMin = Math.Min(variantMin, num);
+                variantMax = Math.Max(variantMax, num);
             }
         }
 
-        return variants;
+        return new VariantData(Start: variantMin, End: variantMax);
     }
 
     private static void GenerateCommonFiles(ProjectContext ctx)
