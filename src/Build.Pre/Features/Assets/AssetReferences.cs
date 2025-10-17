@@ -91,7 +91,6 @@ internal sealed class SoundReference : IAssetReference
             sb.AppendLine($"{indent}public static Terraria.Audio.SoundStyle Asset => new Terraria.Audio.SoundStyle(\"{ctx.ModName}/{Path.ChangeExtension(asset.Path, null)}\"{variantSyntax});");
         }
 
-
         sb.AppendLine();
         return sb.ToString().TrimEnd();
     }
