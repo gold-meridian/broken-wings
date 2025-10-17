@@ -8,7 +8,6 @@ namespace Build.Pre.Features.Shaders;
 internal sealed class ShaderCompiler : BuildTask
 {
     private static string BaseDirectory => Path.GetDirectoryName(Path.GetFullPath(Environment.ProcessPath!))!;
-    private static bool linux;
 
     public override void Run(ProjectContext ctx)
     {
@@ -24,7 +23,6 @@ internal sealed class ShaderCompiler : BuildTask
         var fxcExePath = "";
         if (OperatingSystem.IsLinux())
         {
-            linux = true;
             var otherProcess = new Process();
             var processStartInfo = new ProcessStartInfo
             {
@@ -65,16 +63,19 @@ internal sealed class ShaderCompiler : BuildTask
         {
             CompileShader(fxcExePath, fxcExe, fullPath);
         }
-        
-        if (linux && Environment.ExitCode == -1)
+
+        if (OperatingSystem.IsLinux() && Environment.ExitCode == -1)
         {
             Environment.ExitCode = 0; // wine returns -1 on success for some reason and halts launch until next time
         }
     }
 
-    static string CheckLinuxPathConversion(string str)
+    private static string CheckLinuxPathConversion(string str)
     {
-        if (!linux) return str;
+        if (!OperatingSystem.IsLinux())
+        {
+            return str;
+        }
 
         var process = new Process();
         var processStartInfo = new ProcessStartInfo
@@ -101,7 +102,7 @@ internal sealed class ShaderCompiler : BuildTask
         Environment.ExitCode = 1;
         return str;
     }
-    
+
     private static void CompileShader(string fxcExePath, string fxcExe, string filePath)
     {
         var fxcOutput = Path.ChangeExtension(filePath, ".fxc");
