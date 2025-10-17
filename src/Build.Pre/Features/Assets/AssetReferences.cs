@@ -164,20 +164,15 @@ internal sealed class EffectReference : IAssetReference
 
     private static string GetUniformType(string uniformType)
     {
-        bool isArray = false;
-        string baseType;
-        if (uniformType.Contains("["))
+        var isArray = false;
+        if (uniformType.Contains('['))
         {
-            baseType = uniformType.Substring(0, uniformType.IndexOf('['));
-            var arraySize = uniformType.Count(c => c == '[');
+            var baseType = uniformType[..uniformType.IndexOf('[')];
             uniformType = baseType;
             isArray = true;
-        } else
-        {
-            baseType = uniformType;
         }
 
-        string finalType = uniformType switch
+        var finalType = uniformType switch
         {
             "float" => "float",
             "float2" => "Microsoft.Xna.Framework.Vector2",
@@ -197,7 +192,7 @@ internal sealed class EffectReference : IAssetReference
         {
             finalType += "[]?";
         }
-        
+
         return finalType;
     }
 }
