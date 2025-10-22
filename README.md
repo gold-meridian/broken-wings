@@ -1,9 +1,9 @@
 > [!WARNING]
-> This project is in the process of being phased out!
-> 
-> In the coming weeks, [tml-build](https://github.com/gold-meridian/tml-build) will entirely replace the functionality of **broken-wings**.
+> **This project is deprecated.**
 >
-> This has always been the plan; **broken-wings** was "misguided" for a reason -- we needed a quick-and-dirty solution for simple generation.
+> The time has finally come! **broken-wings** was created to give us time to work on a better solution:
+> 
+> [tml-build](https://github.com/gold-meridian/tml-build) features all the functionality of **broken-wings** in the form of an MSBuild SDK.
 
 # broken-wings
 
